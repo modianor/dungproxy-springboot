@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+    <title>DrungProxy 客户端监控</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8"/>
+    <link href='css/bootstrap.min.css' rel="stylesheet"/>
+    <link href="css/style.css" type="text/css" rel="stylesheet"/>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script src="js/lang.js" type="text/javascript" charset="utf8"></script>
+    <script src="js/common.js" type="text/javascript" charset="utf8"></script>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12">
+            <h3>
+                FULL SQL
+                <a id="viewJsonApi" target="_blank">View JSON API</a>
+            </h3>
+            <table id="dataTable" class="table table-bordered table-striped responsive-utilities">
+                <thead>
+                <tr>
+                    <th>N</th>
+                    <th><a id="th-Domain">Domain</a></th>
+                    <th><a id="th-coreSize" class="lang" langKey="coreSize">核心IP数</a></th>
+                    <th><a id="th-size" class="lang" langKey="nowSize">当前IP数</a></th>
+                    <th><a id="th-minSize" class="lang" langKey="minSize">最小IP数</a></th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $.namespace("druid.domainDetail");
+    druid.domainDetail = function () {
+        var sqlId = druid.common.getUrlVar("domain");
+        return {
+            init: function () {
+                druid.common.buildHead(2);
+                this.ajaxRequestForBasicInfo();
+                $("#viewJsonApi").attr("href", 'domain-' + sqlId + '.json');
+            },
+
+            ajaxRequestForBasicInfo: function () {
+                $.ajax({
+                    type: 'POST',
+                    url: 'domain-' + sqlId + '.json',
+                    success: function (data) {
+                        var sqlInfo = data.Content;
+                        if (sqlInfo == null)
+                            return;
+
+                        $("#fullSql").text(sqlInfo.SQL)
+                        $("#formattedSql").text(sqlInfo.formattedSql)
+                        $("#parsedtable").text(sqlInfo.parsedTable)
+                        $("#parsedfields").text(sqlInfo.parsedFields)
+                        $("#parsedConditions").text(sqlInfo.parsedConditions)
+                        $("#parsedRelationships").text(sqlInfo.parsedRelationships)
+                        $("#parsedOrderbycolumns").text(sqlInfo.parsedOrderbycolumns)
+
+                        $("#MaxTimespanOccurTime").text(sqlInfo.MaxTimespanOccurTime)
+                        $("#LastSlowParameters").text(sqlInfo.LastSlowParameters)
+                        $("#MaxTimespan").text(sqlInfo.MaxTimespan)
+
+                        $("#LastErrorMessage").text(sqlInfo.LastErrorMessage)
+                        $("#LastErrorClass").text(sqlInfo.LastErrorClass)
+                        $("#LastErrorTime").text(sqlInfo.LastErrorTime)
+                        $("#LastErrorStackTrace").text(sqlInfo.LastErrorStackTrace)
+
+                        $("#BatchSizeMax").text(sqlInfo.BatchSizeMax)
+                        $("#BatchSizeTotal").text(sqlInfo.BatchSizeTotal)
+                        $("#BlobOpenCount").text(sqlInfo.BlobOpenCount)
+                        $("#ClobOpenCount").text(sqlInfo.ClobOpenCount)
+                        $("#InputStreamOpenCount").text(sqlInfo.InputStreamOpenCount)
+                        $("#ReaderOpenCount").text(sqlInfo.ReaderOpenCount)
+                        $("#ReadStringLength").text(sqlInfo.ReadStringLength)
+                        $("#ReadBytesLength").text(sqlInfo.ReadBytesLength)
+
+                        druid.lang.trigger();
+                    },
+                    dataType: "json"
+                });
+            }
+        }
+    }();
+
+    $(document).ready(function () {
+        druid.domainDetail.init();
+    });
+</script>
+</body>
+</html>
