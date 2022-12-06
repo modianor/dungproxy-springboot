@@ -14,8 +14,9 @@
         <result column="test_url" property="testUrl" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id, domain, proxy_id, ip, port, domain_score, domain_score_date, createtime, speed,test_url
-  </sql>
+        id
+        , domain, proxy_id, ip, port, domain_score, domain_score_date, createtime, speed,test_url
+    </sql>
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select
         <include refid="Base_Column_List"/>
@@ -23,20 +24,19 @@
         where id = #{id,jdbcType=BIGINT}
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-    delete from domainip
-    where id = #{id,jdbcType=BIGINT}
-  </delete>
+        delete
+        from domainip
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
     <insert id="insert" parameterType="com.virjar.dungproxy.server.entity.DomainIp">
-    insert into domainip (id, domain, proxy_id, 
-      ip, port, domain_score, 
-      domain_score_date, createtime, speed,test_url
-      )
-    values (#{id,jdbcType=BIGINT}, #{domain,jdbcType=VARCHAR}, #{proxyId,jdbcType=BIGINT}, 
-      #{ip,jdbcType=CHAR}, #{port,jdbcType=INTEGER}, #{domainScore,jdbcType=BIGINT}, 
-      #{domainScoreDate,jdbcType=TIMESTAMP}, #{createtime,jdbcType=TIMESTAMP}, #{speed,jdbcType=BIGINT},
-      #{testUrl,jdbcType=VARCHAR}
-      )
-  </insert>
+        insert into domainip (id, domain, proxy_id,
+                              ip, port, domain_score,
+                              domain_score_date, createtime, speed, test_url)
+        values (#{id,jdbcType=BIGINT}, #{domain,jdbcType=VARCHAR}, #{proxyId,jdbcType=BIGINT},
+                #{ip,jdbcType=CHAR}, #{port,jdbcType=INTEGER}, #{domainScore,jdbcType=BIGINT},
+                #{domainScoreDate,jdbcType=TIMESTAMP}, #{createtime,jdbcType=TIMESTAMP}, #{speed,jdbcType=BIGINT},
+                #{testUrl,jdbcType=VARCHAR})
+    </insert>
     <insert id="insertSelective" parameterType="com.virjar.dungproxy.server.entity.DomainIp">
         insert into domainip
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -138,18 +138,18 @@
         where id = #{id,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.virjar.dungproxy.server.entity.DomainIp">
-    update domainip
-    set domain = #{domain,jdbcType=VARCHAR},
-      proxy_id = #{proxyId,jdbcType=BIGINT},
-      ip = #{ip,jdbcType=CHAR},
-      port = #{port,jdbcType=INTEGER},
-      domain_score = #{domainScore,jdbcType=BIGINT},
-      domain_score_date = #{domainScoreDate,jdbcType=TIMESTAMP},
-      createtime = #{createtime,jdbcType=TIMESTAMP},
-      speed = #{speed,jdbcType=BIGINT},
-      test_url = #{testUrl,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=BIGINT}
-  </update>
+        update domainip
+        set domain            = #{domain,jdbcType=VARCHAR},
+            proxy_id          = #{proxyId,jdbcType=BIGINT},
+            ip                = #{ip,jdbcType=CHAR},
+            port              = #{port,jdbcType=INTEGER},
+            domain_score      = #{domainScore,jdbcType=BIGINT},
+            domain_score_date = #{domainScoreDate,jdbcType=TIMESTAMP},
+            createtime        = #{createtime,jdbcType=TIMESTAMP},
+            speed             = #{speed,jdbcType=BIGINT},
+            test_url          = #{testUrl,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
     <select id="selectCount" resultType="java.lang.Integer" parameterType="com.virjar.dungproxy.server.entity.DomainIp">
         select count(*) from domainip
         <where>
@@ -184,6 +184,14 @@
                 and test_url = #{testUrl,jdbcType=VARCHAR}
             </if>
         </where>
+    </select>
+    <select id="selectAvaCount" resultType="java.lang.Integer"
+            parameterType="com.virjar.dungproxy.server.entity.DomainIp">
+        select count(*)
+        from domainip
+        where domain = #{domain,jdbcType=VARCHAR}
+          and domain_score
+            > 0
     </select>
     <select id="selectPage" resultMap="BaseResultMap">
         select
@@ -273,6 +281,8 @@
     </delete>
 
     <delete id="deleteByDomain">
-        DELETE FROM domainip where domain = #{domain,jdbcType=VARCHAR}
+        DELETE
+        FROM domainip
+        where domain = #{domain,jdbcType=VARCHAR}
     </delete>
 </mapper>

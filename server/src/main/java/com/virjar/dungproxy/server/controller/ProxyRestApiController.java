@@ -115,7 +115,7 @@ public class ProxyRestApiController {
         if (StringUtils.isNotEmpty(requestForm.getClientID())) {
             String sign = distributeService.findSign(requestForm.getClientID());
             if (StringUtils.isNotEmpty(sign)) {
-                logger.info("client:{} find a distribute sign:{}", requestForm.getClientID(), sign);
+                logger.info("client:{} find a distribute sign", requestForm.getClientID());
                 requestForm.setUsedSign(sign);
             }
         }

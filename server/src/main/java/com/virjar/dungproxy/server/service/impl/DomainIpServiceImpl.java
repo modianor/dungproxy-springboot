@@ -92,6 +92,12 @@ public class DomainIpServiceImpl implements DomainIpService {
         return domainIpRepo.selectCount(beanMapper.map(domainIpModel, DomainIp.class));
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public int selectAvaCount(DomainIpModel domainIpModel) {
+        return domainIpRepo.selectAvaCount(beanMapper.map(domainIpModel, DomainIp.class));
+    }
+
     @Transactional
     @Override
     public int updateByPrimaryKey(DomainIpModel domainIpModel) {

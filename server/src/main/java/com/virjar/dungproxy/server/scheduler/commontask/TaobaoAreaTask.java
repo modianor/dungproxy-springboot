@@ -72,7 +72,7 @@ public class TaobaoAreaTask extends CommonTask {
                 params.put("ip", ipAddr);
                 params.put("accessKey", "alibaba-inc");
                 response = HttpInvoker.post(TAOBAOURL, params);
-                logger.info("request url:{}", TAOBAOURL + ipAddr);
+                logger.info("request url:{}, 检测ip:{}", TAOBAOURL, ipAddr);
                 if (StringUtils.isEmpty(response)) {
                     return null;
                 }

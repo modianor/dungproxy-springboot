@@ -296,27 +296,9 @@
         </profile>
 
         <profile>
-            <id>guobao</id>
+            <id>prod</id>
             <properties>
-                <deploy.type>guobao</deploy.type>
-            </properties>
-        </profile>
-        <profile>
-            <id>skyee</id>
-            <properties>
-                <deploy.type>skyee</deploy.type>
-            </properties>
-        </profile>
-        <profile>
-            <id>alicloud</id>
-            <properties>
-                <deploy.type>alicloud</deploy.type>
-            </properties>
-        </profile>
-        <profile>
-            <id>tencent</id>
-            <properties>
-                <deploy.type>tencent</deploy.type>
+                <deploy.type>prod</deploy.type>
             </properties>
         </profile>
     </profiles>

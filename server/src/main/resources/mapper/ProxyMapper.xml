@@ -634,7 +634,7 @@
 
     <select id="getPortList" resultType="java.lang.Integer">
         select port
-        from (select `port`, count(port) as num from proxyipcenter.proxy group by port order by num desc) as t
+        from (select `port`, count(port) as num from proxyipcenter_boot.proxy group by port order by num desc) as t
         where t.num > 1
     </select>
 

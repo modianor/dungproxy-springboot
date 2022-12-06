@@ -202,7 +202,7 @@ public class DomainTestTask implements Runnable, InitializingBean {
                 futureList.add(pool.submit(new HistoryUrlTester(holder.domain)));
             } else {
                 // 如果检测任务为proxyIp检测任务
-                // 提交proxyIP检测
+                // 为具体的url筛选可用的proxy
                 futureList.add(pool.submit(new DomainTester(holder.url)));
             }
         }
@@ -320,10 +320,19 @@ public class DomainTestTask implements Runnable, InitializingBean {
             try {
                 DomainMetaModel domainMetaModel = new DomainMetaModel();
                 // 根据testUrl获取domain
-                domainMetaModel.setDomain(CommonUtil.extractDomain(url));
+                String domain = CommonUtil.extractDomain(url);
+                domainMetaModel.setDomain(domain);
                 // 检查domainMate库是否存在domain 不存在则创建
                 if (domainMetaService.selectCount(domainMetaModel) == 0) {
                     domainMetaService.createSelective(domainMetaModel);
+                }
+
+                DomainIpModel condition = new DomainIpModel();
+                condition.setDomain(domain);
+                int count = domainIpService.selectAvaCount(condition);
+                if (count > 50) {
+                    logger.warn("stop checking this domain: {}", domain);
+                    return null;
                 }
                 // 获取proxy表中所有ip 用testUrl对每个ip进行探测可用性
                 List<Proxy> available = proxyRepository.findAvailable();// 系统可用IP,根据权值排序

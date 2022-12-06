@@ -21,6 +21,8 @@ public interface DomainIpService {
 
     int selectCount(DomainIpModel domainIpModel);
 
+    int selectAvaCount(DomainIpModel domainIpModel);
+
     List<DomainIpModel> selectPage(DomainIpModel domainIpModel, Pageable Pageable);
 
     List<ProxyModel> convert(List<DomainIpModel> domainIpModels);

@@ -75,6 +75,9 @@ public class AvProxy {
 
     private long resueTime;
 
+    public AvProxy() {
+    }
+
     public AvProxy(DomainContext domainContext) {
         this.domainContext = domainContext;
         this.dungProxyContext = domainContext.getDungProxyContext();

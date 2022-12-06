@@ -4,7 +4,6 @@ import com.virjar.dungproxy.server.entity.DomainIp;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -23,6 +22,8 @@ public interface DomainIpRepository {
     int updateByPrimaryKey(DomainIp domainip);
 
     int selectCount(DomainIp domainip);
+
+    int selectAvaCount(DomainIp domainip);
 
     List<DomainIp> selectPage(DomainIp domainip, Pageable pageable);
 

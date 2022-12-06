@@ -5,16 +5,12 @@ spring:
       max-request-size: 100MB #最大请求文件的大小
       max-file-size: 100MB
       file-size-threshold: 20MB
-  redis:
-    host: hadoop105
-    port: 6379
-    database: 0
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: "root"
-    password: "2482510236"
-    url: jdbc:mysql://localhost:3306/proxyipcenter_boot?useUnicode=true&characterEncoding=utf8&socketTimeout=60000&connectTimeout=30000&serverTimezone=UTC&serverTimezone=Asia/Shanghai
+    password: "2482510236Gc!"
+    url: jdbc:mysql://10.120.80.55:3306/proxyipcenter_boot?useUnicode=true&characterEncoding=utf8&socketTimeout=60000&connectTimeout=30000&serverTimezone=UTC&serverTimezone=Asia/Shanghai
     hikari:
       minimum-idle: 5
       maximum-pool-size: 10
