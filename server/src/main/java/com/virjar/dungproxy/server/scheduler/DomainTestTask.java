@@ -7,6 +7,7 @@ import com.virjar.dungproxy.client.httpclient.HttpInvoker;
 import com.virjar.dungproxy.client.util.CommonUtil;
 import com.virjar.dungproxy.server.core.beanmapper.BeanMapper;
 import com.virjar.dungproxy.server.entity.Proxy;
+import com.virjar.dungproxy.server.entity.ProxyPolicy;
 import com.virjar.dungproxy.server.model.DomainIpModel;
 import com.virjar.dungproxy.server.model.DomainMetaModel;
 import com.virjar.dungproxy.server.model.ProxyModel;
@@ -163,6 +164,58 @@ public class DomainTestTask implements Runnable, InitializingBean {
             UrlCheckTaskHolder urlCheckTaskHolder = new UrlCheckTaskHolder();
             urlCheckTaskHolder.priority = 10;
             urlCheckTaskHolder.url = url;
+            urlCheckTaskHolder.domain = domain;
+            return domainTaskQueue.offer(urlCheckTaskHolder);
+        } catch (Exception e) {
+            logger.error("为啥任务仍不进来?", e);
+            return false;
+        }
+    }
+
+    public static boolean sendProxyPolicyTask(final ProxyPolicy proxyPolicy) {
+        if (instance == null) {
+            return false;
+        }
+        if (!instance.isRunning) {
+            logger.info("域名校验组件没有开启,将会把这个任务转发到其他服务器进行处理");
+            new Thread() {
+                @Override
+                public void run() {
+                    String s = HttpInvoker.get(SysConfig.getInstance().get("system.domain.test.forward.url"),
+                            Lists.<NameValuePair>newArrayList(new BasicNameValuePair("url", proxyPolicy.getSourceHost())));
+                    logger.info("domain test forward response is {}", s);
+                }
+            }.start();
+            return true;
+        }
+        // 添加url检测任务
+        return instance.addProxyPolicyTask(proxyPolicy);
+    }
+
+
+    public boolean addProxyPolicyTask(ProxyPolicy proxyPolicy) {
+        try {
+            // 根据url提取domain
+            String domain = CommonUtil.extractDomain(proxyPolicy.getSourceHost());
+            if (domain == null) {
+                return false;
+            }
+            /**
+             * 下面逻辑根据domain去重
+             */
+            if (runningDomains.contains(domain)) {
+                return true;
+            } else {
+                synchronized (domain.intern()) {
+                    if (runningDomains.contains(domain)) {
+                        return true;
+                    }
+                    runningDomains.add(domain);
+                }
+            }
+            UrlCheckTaskHolder urlCheckTaskHolder = new UrlCheckTaskHolder();
+            urlCheckTaskHolder.priority = proxyPolicy.getPriority().intValue();
+            urlCheckTaskHolder.url = proxyPolicy.getSourceHost();
             urlCheckTaskHolder.domain = domain;
             return domainTaskQueue.offer(urlCheckTaskHolder);
         } catch (Exception e) {
