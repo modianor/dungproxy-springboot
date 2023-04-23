@@ -227,13 +227,13 @@
         <if test="param1.testUrl != null">
             and test_url = #{testUrl,jdbcType=VARCHAR}
         </if>
-        <if test="param2.sort != null and param2.sort.orders.size() != 0">
+        <if test="param2 != null and param2.sort != null and param2.sort.orders.size() != 0">
             order by
             <foreach collection="param2.sort" item="order" separator=",">
                 ${order.property} ${order.direction}
             </foreach>
         </if>
-        <if test="param2.offset >= 0 and param2.pageSize > 0">
+        <if test="param2 != null and param2.offset >= 0 and param2.pageSize > 0">
             limit ${param2.offset}, ${param2.pageSize}
         </if>
     </select>

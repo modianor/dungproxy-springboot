@@ -30,4 +30,6 @@ public interface DomainIpService {
     DomainIpModel get(String domain, String ip, Integer port);
 
     void offline();
+
+    void deleteBatch(List<Long> ids);
 }

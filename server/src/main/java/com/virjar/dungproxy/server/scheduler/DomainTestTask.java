@@ -1,11 +1,13 @@
 package com.virjar.dungproxy.server.scheduler;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.virjar.dungproxy.client.httpclient.HttpInvoker;
 import com.virjar.dungproxy.client.util.CommonUtil;
 import com.virjar.dungproxy.server.core.beanmapper.BeanMapper;
+import com.virjar.dungproxy.server.entity.DomainIp;
 import com.virjar.dungproxy.server.entity.Proxy;
 import com.virjar.dungproxy.server.entity.ProxyPolicy;
 import com.virjar.dungproxy.server.model.DomainIpModel;
@@ -14,6 +16,7 @@ import com.virjar.dungproxy.server.model.ProxyModel;
 import com.virjar.dungproxy.server.repository.ProxyRepository;
 import com.virjar.dungproxy.server.service.DomainIpService;
 import com.virjar.dungproxy.server.service.DomainMetaService;
+import com.virjar.dungproxy.server.service.ProxyPolicyService;
 import com.virjar.dungproxy.server.utils.NameThreadFactory;
 import com.virjar.dungproxy.server.utils.ProxyUtil;
 import com.virjar.dungproxy.server.utils.SysConfig;
@@ -59,6 +62,9 @@ public class DomainTestTask implements Runnable, InitializingBean {
 
     @Resource
     private DomainMetaService domainMetaService;
+
+    @Resource
+    private ProxyPolicyService proxyPolicyService;
 
     @Resource
     private BeanMapper beanMapper;
@@ -368,6 +374,65 @@ public class DomainTestTask implements Runnable, InitializingBean {
             this.url = url;
         }
 
+        private void deleteUnusedTestUrl(String url) {
+            DomainIpModel domainIpModel = new DomainIpModel();
+            domainIpModel.setTestUrl(url);
+            List<DomainIpModel> domainIps = domainIpService.selectPage(domainIpModel, null);
+            if (domainIps.size() == 0) {
+                return;
+            }
+            List<Long> ids = Lists.transform(domainIps, new Function<DomainIpModel, Long>() {
+                @Override
+                public Long apply(DomainIpModel input) {
+                    return input.getId();
+                }
+            });
+            domainIpService.deleteBatch(ids);
+        }
+
+        private boolean existInProxyPolicy(String url) {
+            ProxyPolicy proxyPolicy = new ProxyPolicy();
+            proxyPolicy.setSourceHost(url);
+            List<ProxyPolicy> proxyPolicies = proxyPolicyService.selectProxyPolicyList(proxyPolicy);
+            if (proxyPolicies.size() > 0) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean existInDomainIp(Proxy proxy) {
+            // 检查当前proxy是否已经存在对应domain下
+            String domain = CommonUtil.extractDomain(url);
+            DomainIpModel condition = new DomainIpModel();
+            condition.setDomain(domain);
+            condition.setIp(proxy.getIp());
+            condition.setPort(proxy.getPort());
+            int num = domainIpService.selectCount(condition);
+            if (num == 1) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean needTestDomain(String url) {
+            // 检查当前domain下可用ip是否超过最大数量上限
+            String domain = CommonUtil.extractDomain(url);
+            DomainIpModel condition = new DomainIpModel();
+            condition.setDomain(domain);
+            int currentNum = domainIpService.selectAvaCount(condition);
+            ProxyPolicy proxyPolicy = new ProxyPolicy();
+            proxyPolicy.setSourceHost(url);
+            List<ProxyPolicy> proxyPolicies = proxyPolicyService.selectProxyPolicyList(proxyPolicy);
+            if (proxyPolicies.size() > 0) {
+                proxyPolicy = proxyPolicies.get(0);
+                Long maxNum = proxyPolicy.getMaxNum();
+                if (currentNum < maxNum) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         @Override
         public Object call() {
             try {
@@ -379,18 +444,27 @@ public class DomainTestTask implements Runnable, InitializingBean {
                 if (domainMetaService.selectCount(domainMetaModel) == 0) {
                     domainMetaService.createSelective(domainMetaModel);
                 }
-
-                DomainIpModel condition = new DomainIpModel();
-                condition.setDomain(domain);
-                int count = domainIpService.selectAvaCount(condition);
-                if (count > 50) {
-                    logger.warn("stop checking this domain: {}", domain);
+                // 检查当前url是否存在于代理策略表中 如果不存在 直接跳过 并且删除对应的domainIp
+                if (!existInProxyPolicy(url)) {
+                    deleteUnusedTestUrl(url);
+                    logger.warn("stop checking this domain: {}, because this domain not in proxy policy", domain);
                     return null;
                 }
                 // 获取proxy表中所有ip 用testUrl对每个ip进行探测可用性
                 List<Proxy> available = proxyRepository.findAvailable();// 系统可用IP,根据权值排序
                 logger.info("domain check total:{} url:{}", available.size(), url);
                 for (Proxy proxy : available) {
+
+                    if (existInDomainIp(proxy)) {
+                        logger.warn("continue to check this domain: {}, because this proxy ip is in the domain ip", domain);
+                        continue;
+                    }
+
+                    if (!needTestDomain(url)) {
+                        logger.warn("stop checking this domain: {}, because the num of current domain ip is greater than the max num of the domain", domain);
+                        return null;
+                    }
+
                     logger.info("url:{} domain check :{}", url, JSONObject.toJSONString(proxy));
                     if (ProxyUtil.checkUrl(beanMapper.map(proxy, ProxyModel.class), url)) {
                         logger.info("url:{} domain check success :{}", url, JSONObject.toJSONString(proxy));

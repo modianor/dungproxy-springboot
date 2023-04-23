@@ -10,7 +10,6 @@ import com.virjar.dungproxy.server.model.ProxyModel;
 import com.virjar.dungproxy.server.repository.DomainIpRepository;
 import com.virjar.dungproxy.server.repository.ProxyRepository;
 import com.virjar.dungproxy.server.service.DomainIpService;
-import org.apache.ibatis.annotations.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -166,8 +165,13 @@ public class DomainIpServiceImpl implements DomainIpService {
                     return input.getId();
                 }
             });
-            domainIpRepo.deleteBatch(ids);
+            deleteBatch(ids);
         }
 
+    }
+
+    @Override
+    public void deleteBatch(List<Long> ids) {
+        domainIpRepo.deleteBatch(ids);
     }
 }

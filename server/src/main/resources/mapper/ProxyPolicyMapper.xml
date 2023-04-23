@@ -3,7 +3,7 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.virjar.dungproxy.server.repository.ProxyPolicyRepository">
-    
+
     <resultMap type="com.virjar.dungproxy.server.entity.ProxyPolicy" id="ProxyPolicyResult">
         <result property="id"    column="id"    />
         <result property="policyId"    column="policy_id"    />
@@ -11,17 +11,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="protocol"    column="protocol"    />
         <result property="sourceHost"    column="source_host"    />
         <result property="priority"    column="priority"    />
+        <result property="maxNum"    column="max_num"    />
         <result property="status"    column="status"    />
     </resultMap>
 
     <sql id="selectProxyPolicyVo">
-        select id, policy_id, proxy_name, protocol, source_host, priority, status from proxy_policy
+        select id, policy_id, proxy_name, protocol, source_host, priority, max_num, status from proxy_policy
     </sql>
 
     <select id="selectProxyPolicyList" parameterType="com.virjar.dungproxy.server.entity.ProxyPolicy" resultMap="ProxyPolicyResult">
         <include refid="selectProxyPolicyVo"/>
-        <where>  
-            <if test="policyId != null  and policyId != ''"> and policy_id like concat('%', #{policyId}, '%')</if>
+        <where>
+            <if test="policyId != null  and policyId != ''"> and policy_id = #{policyId}</if>
             <if test="proxyName != null  and proxyName != ''"> and proxy_name like concat('%', #{proxyName}, '%')</if>
             <if test="protocol != null  and protocol != ''"> and protocol = #{protocol}</if>
             <if test="sourceHost != null  and sourceHost != ''"> and source_host = #{sourceHost}</if>
@@ -29,12 +30,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="status != null  and status != ''"> and status = #{status}</if>
         </where>
     </select>
-    
+
     <select id="selectProxyPolicyById" parameterType="Long" resultMap="ProxyPolicyResult">
         <include refid="selectProxyPolicyVo"/>
         where id = #{id}
     </select>
-        
+
     <insert id="insertProxyPolicy" parameterType="com.virjar.dungproxy.server.entity.ProxyPolicy" useGeneratedKeys="true" keyProperty="id">
         insert into proxy_policy
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -43,6 +44,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="protocol != null and protocol != ''">protocol,</if>
             <if test="sourceHost != null and sourceHost != ''">source_host,</if>
             <if test="priority != null">priority,</if>
+            <if test="maxNum != null">max_num,</if>
             <if test="status != null and status != ''">status,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -51,6 +53,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="protocol != null and protocol != ''">#{protocol},</if>
             <if test="sourceHost != null and sourceHost != ''">#{sourceHost},</if>
             <if test="priority != null">#{priority},</if>
+            <if test="maxNum != null">#{maxNum},</if>
             <if test="status != null and status != ''">#{status},</if>
          </trim>
     </insert>
@@ -63,6 +66,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="protocol != null and protocol != ''">protocol = #{protocol},</if>
             <if test="sourceHost != null and sourceHost != ''">source_host = #{sourceHost},</if>
             <if test="priority != null">priority = #{priority},</if>
+            <if test="maxNum != null">#{maxNum},</if>
             <if test="status != null and status != ''">status = #{status},</if>
         </trim>
         where id = #{id}
@@ -73,7 +77,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteProxyPolicyByIds" parameterType="String">
-        delete from proxy_policy where id in 
+        delete from proxy_policy where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

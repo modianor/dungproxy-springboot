@@ -41,6 +41,10 @@ public class ProxyPolicy {
      * 检测优先级
      */
     private Long priority;
+    /**
+     * 数量上限
+     */
+    private Long maxNum;
 
     /**
      * 代理源状态
@@ -103,6 +107,14 @@ public class ProxyPolicy {
         return status;
     }
 
+    public Long getMaxNum() {
+        return maxNum;
+    }
+
+    public void setMaxNum(Long maxNum) {
+        this.maxNum = maxNum;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
@@ -112,6 +124,7 @@ public class ProxyPolicy {
                 .append("protocol", getProtocol())
                 .append("sourceHost", getSourceHost())
                 .append("priority", getPriority())
+                .append("maxNum", getMaxNum())
                 .append("status", getStatus())
                 .toString();
     }
